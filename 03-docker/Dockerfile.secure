@@ -1,4 +1,4 @@
-```dockerfile
+
 # === Этап 1: ставим зависимости ===
 FROM python:3.11-slim-bookworm AS builder
 WORKDIR /build
@@ -30,4 +30,4 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
 
 # Секреты передаём при запуске: docker run -e DATABASE_PASSWORD=xxx
 CMD ["python3", "app.py"]
-```
+
