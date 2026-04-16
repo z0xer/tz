@@ -44,17 +44,18 @@ echo "Restricted token: $RESTRICTED_TOKEN"
 # === 7. Тесты ограничений ===
 echo ""
 echo "=== read test ==="
-VAULT_TOKEN=$RESTRICTED_TOKEN vault_exec kv get secret/app/database
+VAULT_TOKEN=$RESTRICTED_TOKEN vault_exec kv get secret/app/database \
+  || echo ">> read access"
 
 echo ""
 echo "=== write test ==="
 VAULT_TOKEN=$RESTRICTED_TOKEN vault_exec kv put secret/app/database password=hacked \
-  || echo ">> Correctly denied"
+  || echo ">> write deny"
 
 echo ""
 echo "=== delete test ==="
 VAULT_TOKEN=$RESTRICTED_TOKEN vault_exec kv delete secret/app/database \
-  || echo ">> Correctly denied"
+  || echo ">> delete deny"
 
 echo ""
 echo "=== Done ==="
