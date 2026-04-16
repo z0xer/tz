@@ -1,4 +1,3 @@
-```
 .git
 .env
 .env.*
@@ -16,4 +15,4 @@ README.md
 .github/
 *.pem
 *.key
-```
+
