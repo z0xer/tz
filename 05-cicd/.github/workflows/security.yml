@@ -1,0 +1,77 @@
+# Security Pipeline — простые проверки безопасности
+# Запускается при push в main и на любой PR
+
+name: Security Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  security:
+    name: Security Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      # Клонируем репозиторий
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Нужна вся история, чтобы gitleaks проверил старые коммиты тоже
+
+      # ===== ШАГ 1: Сканирование секретов =====
+      # Ищем утёкшие API-ключи, пароли, токены в коде
+      - name: Gitleaks — поиск секретов
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Если нашёл секрет — этот шаг упадёт и пайплайн остановится
+
+      # ===== ШАГ 2: Статический анализ кода (SAST) =====
+      # Ищем уязвимости в Python-коде: SQL-инъекции, hardcoded пароли и т.д.
+      - name: Установка Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Установка Bandit
+        run: pip install bandit
+
+      - name: Bandit — анализ Python-кода
+        run: |
+          # -r .           — рекурсивно по всем файлам
+          # -ll            — показывать только MEDIUM и HIGH проблемы
+          # -f txt         — текстовый формат
+          # Если найдёт проблемы — вернёт exit code != 0, пайплайн упадёт
+          bandit -r . -ll -f txt
+
+      # ===== ШАГ 3: Сборка Docker образа =====
+      - name: Сборка Docker образа
+        run: docker build -f Dockerfile.secure -t myapp:latest .
+
+      # ===== ШАГ 4: Сканирование образа на уязвимости =====
+      # Ищем CVE в базовом образе и установленных пакетах
+      - name: Trivy — сканирование образа
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'myapp:latest'
+          format: 'table'
+          exit-code: '1'              # Упасть если нашёл уязвимости
+          severity: 'HIGH,CRITICAL'   # Только HIGH и CRITICAL
+          ignore-unfixed: true        # Игнорировать те что ещё не пофикшены
+
+      # ===== ШАГ 5: Пайплайн падает автоматически =====
+      # Если любой из шагов выше упал — весь пайплайн fail
+
+      # Проверяем requirements.txt на известные уязвимости
+      - name: Safety — проверка зависимостей
+        if: always()  # Запустить даже если предыдущие шаги упали
+        run: |
+          pip install safety
+          # Если requirements.txt есть — проверяем
+          if [ -f requirements.txt ]; then
+            safety check -r requirements.txt || true
+          else
+            echo "requirements.txt не найден, пропускаем"
+          fi
