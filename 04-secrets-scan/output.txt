@@ -1,0 +1,49 @@
+root@zoi:/home/zoi# ./gitleaks detect -v  --source=test_keys/
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+Finding:     aws_access_key_id = AKIAQYLPMN5HHHFPZAM2
+Secret:      AKIAQYLPMN5HHHFPZAM2
+RuleID:      aws-access-token
+Entropy:     3.646439
+File:        new_key
+Line:        2
+Commit:      0416560b1330d8ac42045813251d85c688717eaf
+Author:      counter
+Email:       hello@trufflesec.com
+Date:        2023-10-19T02:56:37Z
+Fingerprint: 0416560b1330d8ac42045813251d85c688717eaf:new_key:aws-access-token:2
+
+Finding:     aws_access_key_id = AKIAYVP4CIPPERUVIFXG
+Secret:      AKIAYVP4CIPPERUVIFXG
+RuleID:      aws-access-token
+Entropy:     3.646439
+File:        keys
+Line:        4
+Commit:      fbc14303ffbf8fb1c2c1914e8dda7d0121633aca
+Author:      counter
+Email:       counter@counters-MacBook-Air.local
+Date:        2022-06-16T17:17:40Z
+Fingerprint: fbc14303ffbf8fb1c2c1914e8dda7d0121633aca:keys:aws-access-token:4
+
+Finding:     -----BEGIN OPENSSH PRIVATE KEY-----                                
+b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAj...
+Secret:      -----BEGIN OPENSSH PRIVATE KEY-----                                
+b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAj...
+RuleID:      private-key
+Entropy:     6.027866
+File:        keys
+Line:        6
+Commit:      77b2a3e56973785a52ba4ae4b8dac61d4bac016f
+Author:      counter
+Email:       counter@counters-MacBook-Air.local
+Date:        2022-06-16T17:27:56Z
+Fingerprint: 77b2a3e56973785a52ba4ae4b8dac61d4bac016f:keys:private-key:6
+
+2:21PM INF 6 commits scanned.
+2:21PM INF scan completed in 11.4ms
+2:21PM WRN leaks found: 3
