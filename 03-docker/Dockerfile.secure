@@ -1,0 +1,33 @@
+```dockerfile
+# === Этап 1: ставим зависимости ===
+FROM python:3.11-slim-bookworm AS builder
+WORKDIR /build
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# === Этап 2: финальный лёгкий образ ===
+FROM python:3.11-slim-bookworm
+
+# Создаём обычного юзера (не root!)
+RUN groupadd --system app && useradd --system --no-create-home --gid app app
+
+WORKDIR /app
+
+# Копируем зависимости из первого этапа
+COPY --from=builder /install /usr/local
+
+# Копируем код приложения
+COPY --chown=app:app . .
+
+# Переключаемся на обычного юзера
+USER app
+
+EXPOSE 8080
+
+# Проверка что приложение живо
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')" || exit 1
+
+# Секреты передаём при запуске: docker run -e DATABASE_PASSWORD=xxx
+CMD ["python3", "app.py"]
+```
